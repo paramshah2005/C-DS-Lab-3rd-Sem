@@ -1,0 +1,260 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define structure with typedef
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+Node* head = NULL;
+
+// Function prototypes
+void insertBefore(int newData, int beforeData);
+void insertAfter(int newData, int afterData);
+void deleteNode(int key);
+void traverse();
+void reverseList();
+void sortList();
+void deleteAlternate();
+void insertSorted(int newData);
+
+int main() {
+    int choice, value, refValue;
+
+    while (1) {
+        printf("\n--- Singly Linked List Operations ---\n");
+        printf("1. Insert an element BEFORE another\n");
+        printf("2. Insert an element AFTER another\n");
+        printf("3. Delete a specified element\n");
+        printf("4. Traverse and display list\n");
+        printf("5. Reverse the list\n");
+        printf("6. Sort the list (ascending)\n");
+        printf("7. Delete every alternate node\n");
+        printf("8. Insert into a sorted list\n");
+        printf("9. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter value to insert: ");
+                scanf("%d", &value);
+                printf("Enter element before which to insert: ");
+                scanf("%d", &refValue);
+                insertBefore(value, refValue);
+                break;
+            case 2:
+                printf("Enter value to insert: ");
+                scanf("%d", &value);
+                printf("Enter element after which to insert: ");
+                scanf("%d", &refValue);
+                insertAfter(value, refValue);
+                break;
+            case 3:
+                printf("Enter element to delete: ");
+                scanf("%d", &value);
+                deleteNode(value);
+                break;
+            case 4:
+                traverse();
+                break;
+            case 5:
+                reverseList();
+                printf("List reversed.\n");
+                break;
+            case 6:
+                sortList();
+                printf("List sorted.\n");
+                break;
+            case 7:
+                deleteAlternate();
+                printf("Alternate nodes deleted.\n");
+                break;
+            case 8:
+                printf("Enter value to insert (sorted): ");
+                scanf("%d", &value);
+                insertSorted(value);
+                break;
+            case 9:
+                exit(0);
+            default:
+                printf("Invalid choice!\n");
+        }
+    }
+
+    return 0;
+}
+
+// Insert before a specified element
+void insertBefore(int newData, int beforeData) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = newData;
+    newNode->next = NULL;
+
+    if (head == NULL) {
+        printf("List is empty. Cannot insert before.\n");
+        free(newNode);
+        return;
+    }
+
+    if (head->data == beforeData) {
+        newNode->next = head;
+        head = newNode;
+        return;
+    }
+
+    Node* temp = head;
+    while (temp->next != NULL && temp->next->data != beforeData) {
+        temp = temp->next;
+    }
+
+    if (temp->next == NULL) {
+        printf("Element %d not found.\n", beforeData);
+        free(newNode);
+    } else {
+        newNode->next = temp->next;
+        temp->next = newNode;
+    }
+}
+
+// Insert after a specified element
+void insertAfter(int newData, int afterData) {
+    Node* temp = head;
+    while (temp != NULL && temp->data != afterData) {
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("Element %d not found.\n", afterData);
+        return;
+    }
+
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = newData;
+    newNode->next = temp->next;
+    temp->next = newNode;
+}
+
+// Delete a specified element
+void deleteNode(int key) {
+    if (head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+
+    Node* temp = head;
+
+    if (head->data == key) {
+        head = head->next;
+        free(temp);
+        return;
+    }
+
+    Node* prev = NULL;
+    while (temp != NULL && temp->data != key) {
+        prev = temp;
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("Element %d not found.\n", key);
+        return;
+    }
+
+    prev->next = temp->next;
+    free(temp);
+}
+
+// Traverse and display
+void traverse() {
+    if (head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+
+    Node* temp = head;
+    printf("List: ");
+    while (temp != NULL) {
+        printf("%d -> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+
+// Reverse the list
+void reverseList() {
+    Node* prev = NULL;
+    Node* curr = head;
+    Node* next = NULL;
+
+    while (curr != NULL) {
+        next = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = next;
+    }
+
+    head = prev;
+}
+
+// Sort the list (Bubble Sort)
+void sortList() {
+    if (head == NULL || head->next == NULL) return;
+
+    int swapped;
+    Node* ptr;
+    Node* lastPtr = NULL;
+
+    do {
+        swapped = 0;
+        ptr = head;
+
+        while (ptr->next != lastPtr) {
+            if (ptr->data > ptr->next->data) {
+                int temp = ptr->data;
+                ptr->data = ptr->next->data;
+                ptr->next->data = temp;
+                swapped = 1;
+            }
+            ptr = ptr->next;
+        }
+        lastPtr = ptr;
+    } while (swapped);
+}
+
+// Delete alternate nodes
+void deleteAlternate() {
+    if (head == NULL) return;
+
+    Node* curr = head;
+    Node* temp;
+
+    while (curr != NULL && curr->next != NULL) {
+        temp = curr->next;
+        curr->next = temp->next;
+        free(temp);
+        curr = curr->next;
+    }
+}
+
+// Insert into a sorted list
+void insertSorted(int newData) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = newData;
+    newNode->next = NULL;
+
+    if (head == NULL || head->data >= newData) {
+        newNode->next = head;
+        head = newNode;
+        return;
+    }
+
+    Node* temp = head;
+    while (temp->next != NULL && temp->next->data < newData) {
+        temp = temp->next;
+    }
+
+    newNode->next = temp->next;
+    temp->next = newNode;
+}

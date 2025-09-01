@@ -1,0 +1,187 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int data;
+    struct Node* prev;
+    struct Node* next;
+} Node;
+
+// ===== Utility Functions =====
+
+// Create new node
+Node* createNode(int data) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->prev = newNode->next = NULL;
+    return newNode;
+}
+
+// Insert at end
+void insertEnd(Node** head, int data) {
+    Node* newNode = createNode(data);
+    if (*head == NULL) {
+        *head = newNode;
+        return;
+    }
+    Node* temp = *head;
+    while (temp->next) temp = temp->next;
+    temp->next = newNode;
+    newNode->prev = temp;
+}
+
+// Display list forward
+void traverse(Node* head) {
+    if (!head) {
+        printf("List is empty\n");
+        return;
+    }
+    Node* temp = head;
+    while (temp) {
+        printf("%d <-> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+
+// Check if element exists in list
+int exists(Node* head, int val) {
+    while (head) {
+        if (head->data == val) return 1;
+        head = head->next;
+    }
+    return 0;
+}
+
+// ===== Union of Two Doubly Linked Lists =====
+Node* listUnion(Node* A, Node* B) {
+    Node* result = NULL;
+    Node* temp = A;
+
+    while (temp) {
+        if (!exists(result, temp->data))
+            insertEnd(&result, temp->data);
+        temp = temp->next;
+    }
+
+    temp = B;
+    while (temp) {
+        if (!exists(result, temp->data))
+            insertEnd(&result, temp->data);
+        temp = temp->next;
+    }
+
+    return result;
+}
+
+// ===== Intersection of Two Doubly Linked Lists =====
+Node* listIntersection(Node* A, Node* B) {
+    Node* result = NULL;
+    Node* temp = A;
+
+    while (temp) {
+        if (exists(B, temp->data) && !exists(result, temp->data))
+            insertEnd(&result, temp->data);
+        temp = temp->next;
+    }
+
+    return result;
+}
+
+// ===== Addition of Long Integers =====
+
+// Build number list from string
+Node* buildNumber(char num[]) {
+    Node* head = NULL;
+    for (int i = 0; num[i] != '\0'; i++) {
+        insertEnd(&head, num[i] - '0'); // store each digit
+    }
+    return head;
+}
+
+// Get tail of list
+Node* getTail(Node* head) {
+    if (!head) return NULL;
+    while (head->next) head = head->next;
+    return head;
+}
+
+// Add two long integers represented by doubly linked lists
+Node* addNumbers(Node* num1, Node* num2) {
+    Node* tail1 = getTail(num1);
+    Node* tail2 = getTail(num2);
+
+    Node* result = NULL;
+    int carry = 0;
+
+    while (tail1 || tail2 || carry) {
+        int sum = carry;
+        if (tail1) { sum += tail1->data; tail1 = tail1->prev; }
+        if (tail2) { sum += tail2->data; tail2 = tail2->prev; }
+
+        carry = sum / 10;
+        insertEnd(&result, sum % 10);
+    }
+
+    // Reverse result list to correct order
+    Node* prev = NULL, *curr = result, *next = NULL;
+    while (curr) {
+        next = curr->next;
+        curr->next = prev;
+        curr->prev = next;
+        prev = curr;
+        curr = next;
+    }
+    return prev; // new head
+}
+
+// ===== Main Driver =====
+int main() {
+    Node *A = NULL, *B = NULL, *U = NULL, *I = NULL;
+    char num1[100], num2[100];
+    Node *N1 = NULL, *N2 = NULL, *Sum = NULL;
+    int n, val;
+
+    // ===== Union & Intersection =====
+    printf("Enter number of elements in List A: ");
+    scanf("%d", &n);
+    printf("Enter elements of List A:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &val);
+        insertEnd(&A, val);
+    }
+
+    printf("Enter number of elements in List B: ");
+    scanf("%d", &n);
+    printf("Enter elements of List B:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &val);
+        insertEnd(&B, val);
+    }
+
+    printf("\nList A: "); traverse(A);
+    printf("List B: "); traverse(B);
+
+    U = listUnion(A, B);
+    I = listIntersection(A, B);
+
+    printf("\nUnion: "); traverse(U);
+    printf("Intersection: "); traverse(I);
+
+    // ===== Long Integer Addition =====
+    printf("\nEnter first long integer: ");
+    scanf("%s", num1);
+    printf("Enter second long integer: ");
+    scanf("%s", num2);
+
+    N1 = buildNumber(num1);
+    N2 = buildNumber(num2);
+
+    printf("Number 1: "); traverse(N1);
+    printf("Number 2: "); traverse(N2);
+
+    Sum = addNumbers(N1, N2);
+    printf("Sum: "); traverse(Sum);
+
+    return 0;
+}

@@ -1,0 +1,419 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+Node *first = NULL, *last = NULL;
+
+// Insert at end
+void insertEnd(int val) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = val;
+    if (first == NULL) {
+        first = last = newNode;
+        last->next = first; // circular
+    } else {
+        last->next = newNode;
+        last = newNode;
+        last->next = first;
+    }
+}
+
+// Delete from beginning
+void deleteBegin() {
+    if (first == NULL) {
+        printf("List empty!\n");
+        return;
+    }
+    Node* temp = first;
+    if (first == last) {
+        first = last = NULL;
+    } else {
+        first = first->next;
+        last->next = first;
+    }
+    free(temp);
+}
+
+// Delete from end
+void deleteEnd() {
+    if (first == NULL) {
+        printf("List empty!\n");
+        return;
+    }
+    Node* temp = first;
+    if (first == last) {
+        first = last = NULL;
+        free(temp);
+        return;
+    }
+    while (temp->next != last) temp = temp->next;
+    temp->next = first;
+    free(last);
+    last = temp;
+}
+
+// Display list
+void display() {
+    if (first == NULL) {
+        printf("List empty!\n");
+        return;
+    }
+    Node* temp = first;
+    printf("List: ");
+    do {
+        printf("%d -> ", temp->data);
+        temp = temp->next;
+    } while (temp != first);
+    printf("(back to first)\n");
+}
+
+int main() {
+    insertEnd(10);
+    insertEnd(20);
+    insertEnd(30);
+    display();
+
+    deleteBegin();
+    display();
+
+    deleteEnd();
+    display();
+
+    return 0;
+}
+
+
+
+
+
+/// next question
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Poly {
+    int coeff, exp;
+    struct Poly* prev;
+    struct Poly* next;
+} Poly;
+
+// Create new node
+Poly* createNode(int c, int e) {
+    Poly* node = (Poly*)malloc(sizeof(Poly));
+    node->coeff = c;
+    node->exp = e;
+    node->prev = node->next = NULL;
+    return node;
+}
+
+// Insert in descending exponent order
+void insertPoly(Poly** head, int c, int e) {
+    Poly* node = createNode(c, e);
+    if (*head == NULL) {
+        *head = node;
+        return;
+    }
+    Poly* temp = *head;
+    while (temp->next && temp->exp > e) temp = temp->next;
+
+    if (temp == *head && e > temp->exp) {
+        node->next = *head;
+        (*head)->prev = node;
+        *head = node;
+    } else {
+        while (temp->next && temp->exp < e) temp = temp->next;
+        if (temp->exp == e) {
+            temp->coeff += c;
+            free(node);
+            return;
+        } else if (temp->exp < e) {
+            node->next = temp;
+            node->prev = temp->prev;
+            if (temp->prev) temp->prev->next = node;
+            else *head = node;
+            temp->prev = node;
+        } else {
+            node->prev = temp;
+            node->next = temp->next;
+            if (temp->next) temp->next->prev = node;
+            temp->next = node;
+        }
+    }
+}
+
+// Display polynomial
+void displayPoly(Poly* head) {
+    if (!head) {
+        printf("0\n");
+        return;
+    }
+    Poly* temp = head;
+    while (temp) {
+        printf("%dx^%d ", temp->coeff, temp->exp);
+        if (temp->next && temp->next->coeff >= 0) printf("+ ");
+        temp = temp->next;
+    }
+    printf("\n");
+}
+
+// Add two polynomials
+Poly* addPoly(Poly* P, Poly* Q) {
+    Poly* result = NULL;
+    Poly *p1 = P, *p2 = Q;
+    while (p1 && p2) {
+        if (p1->exp == p2->exp) {
+            insertPoly(&result, p1->coeff + p2->coeff, p1->exp);
+            p1 = p1->next; p2 = p2->next;
+        } else if (p1->exp > p2->exp) {
+            insertPoly(&result, p1->coeff, p1->exp);
+            p1 = p1->next;
+        } else {
+            insertPoly(&result, p2->coeff, p2->exp);
+            p2 = p2->next;
+        }
+    }
+    while (p1) { insertPoly(&result, p1->coeff, p1->exp); p1 = p1->next; }
+    while (p2) { insertPoly(&result, p2->coeff, p2->exp); p2 = p2->next; }
+    return result;
+}
+
+int main() {
+    Poly *P = NULL, *Q = NULL, *Sum = NULL;
+
+    insertPoly(&P, 5, 2);
+    insertPoly(&P, 4, 1);
+    insertPoly(&P, 2, 0);
+
+    insertPoly(&Q, 5, 1);
+    insertPoly(&Q, 5, 0);
+
+    printf("P(x) = "); displayPoly(P);
+    printf("Q(x) = "); displayPoly(Q);
+
+    Sum = addPoly(P, Q);
+    printf("Sum = "); displayPoly(Sum);
+
+    return 0;
+}
+
+
+
+
+//next question
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int data;
+    struct Node* prev;
+    struct Node* next;
+} Node;
+
+Node* head = NULL;
+
+// Insert at end
+void insert(int val) {
+    Node* node = (Node*)malloc(sizeof(Node));
+    node->data = val;
+    if (!head) {
+        head = node;
+        head->next = head->prev = head;
+    } else {
+        Node* last = head->prev;
+        node->next = head;
+        node->prev = last;
+        last->next = node;
+        head->prev = node;
+    }
+}
+
+// Delete an element
+void deleteVal(int val) {
+    if (!head) { printf("List empty!\n"); return; }
+    Node* temp = head;
+    do {
+        if (temp->data == val) {
+            if (temp->next == temp) {
+                head = NULL;
+            } else {
+                temp->prev->next = temp->next;
+                temp->next->prev = temp->prev;
+                if (temp == head) head = temp->next;
+            }
+            free(temp);
+            return;
+        }
+        temp = temp->next;
+    } while (temp != head);
+    printf("Element not found!\n");
+}
+
+// Display
+void display() {
+    if (!head) { printf("List empty!\n"); return; }
+    Node* temp = head;
+    do {
+        printf("%d <-> ", temp->data);
+        temp = temp->next;
+    } while (temp != head);
+    printf("(back to head)\n");
+}
+
+int main() {
+    int choice, val;
+    while (1) {
+        printf("\n1.Insert  2.Delete  3.Display  4.Exit\n");
+        scanf("%d", &choice);
+        switch (choice) {
+            case 1: printf("Enter value: "); scanf("%d", &val); insert(val); break;
+            case 2: printf("Enter value: "); scanf("%d", &val); deleteVal(val); break;
+            case 3: display(); break;
+            case 4: exit(0);
+        }
+    }
+}
+
+
+
+//next uestion
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Poly {
+    int coeff, exp;
+    struct Poly* prev;
+    struct Poly* next;
+} Poly;
+
+// Create header node
+Poly* createHeader() {
+    Poly* h = (Poly*)malloc(sizeof(Poly));
+    h->coeff = h->exp = 0;
+    h->next = h->prev = h;
+    return h;
+}
+
+// Insert at end
+void insertTerm(Poly* head, int c, int e) {
+    Poly* node = (Poly*)malloc(sizeof(Poly));
+    node->coeff = c; node->exp = e;
+    node->next = head;
+    node->prev = head->prev;
+    head->prev->next = node;
+    head->prev = node;
+}
+
+// Display
+void display(Poly* head) {
+    if (head->next == head) { printf("0\n"); return; }
+    Poly* t = head->next;
+    while (t != head) {
+        printf("%dx^%d ", t->coeff, t->exp);
+        if (t->next != head && t->next->coeff >= 0) printf("+ ");
+        t = t->next;
+    }
+    printf("\n");
+}
+
+// Multiply polynomials
+Poly* multiplyPoly(Poly* A, Poly* B) {
+    Poly* result = createHeader();
+    for (Poly* p = A->next; p != A; p = p->next) {
+        for (Poly* q = B->next; q != B; q = q->next) {
+            insertTerm(result, p->coeff * q->coeff, p->exp + q->exp);
+        }
+    }
+    // Merge like terms
+    for (Poly* p = result->next; p != result; p = p->next) {
+        Poly* q = p->next;
+        while (q != result) {
+            if (q->exp == p->exp) {
+                p->coeff += q->coeff;
+                q->prev->next = q->next;
+                q->next->prev = q->prev;
+                Poly* del = q;
+                q = q->next;
+                free(del);
+            } else q = q->next;
+        }
+    }
+    return result;
+}
+
+int main() {
+    Poly* P = createHeader();
+    Poly* Q = createHeader();
+    Poly* R;
+
+    insertTerm(P, 3, 2);
+    insertTerm(P, 2, 1);
+
+    insertTerm(Q, 1, 1);
+    insertTerm(Q, 4, 0);
+
+    printf("P(x) = "); display(P);
+    printf("Q(x) = "); display(Q);
+
+    R = multiplyPoly(P, Q);
+    printf("Product = "); display(R);
+
+    return 0;
+}
+
+
+//next question
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h> // for sleep()
+
+typedef struct User {
+    int id, time;
+    struct User* prev;
+    struct User* next;
+} User;
+
+User* head = NULL;
+
+// Add user
+void addUser(int id, int time) {
+    User* node = (User*)malloc(sizeof(User));
+    node->id = id; node->time = time;
+    if (!head) {
+        head = node;
+        head->next = head->prev = head;
+    } else {
+        User* last = head->prev;
+        node->next = head;
+        node->prev = last;
+        last->next = node;
+        head->prev = node;
+    }
+}
+
+// Simulate washing machine rental
+void simulate() {
+    if (!head) { printf("No users in queue!\n"); return; }
+    User* curr = head;
+    while (1) {
+        printf("User %d is using the machine for %d seconds...\n", curr->id, curr->time);
+        sleep(curr->time);  // simulate
+        printf("Time over! Passing machine to next user...\n\n");
+        curr = curr->next;
+    }
+}
+
+int main() {
+    addUser(1, 2);
+    addUser(2, 3);
+    addUser(3, 1);
+
+    simulate();
+    return 0;
+}
+
+

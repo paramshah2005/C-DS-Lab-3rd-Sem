@@ -1,0 +1,130 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+// ===== Recursive Functions =====
+
+// Recursively create a linked list (end insertion)
+Node* createRecursive(int n) {
+    if (n <= 0) return NULL;
+
+    Node* node = (Node*)malloc(sizeof(Node));
+    printf("Enter data: ");
+    scanf("%d", &node->data);
+    node->next = createRecursive(n - 1);
+    return node;
+}
+
+// Recursively traverse a linked list
+void traverseRecursive(Node* head) {
+    if (head == NULL) {
+        printf("NULL\n");
+        return;
+    }
+    printf("%d -> ", head->data);
+    traverseRecursive(head->next);
+}
+
+// ===== Merge Two Sorted Lists =====
+Node* mergeSorted(Node* X, Node* Y) {
+    if (X == NULL) return Y;
+    if (Y == NULL) return X;
+
+    Node* result = NULL;
+
+    if (X->data <= Y->data) {
+        result = X;
+        result->next = mergeSorted(X->next, Y);
+    } else {
+        result = Y;
+        result->next = mergeSorted(X, Y->next);
+    }
+
+    return result;
+}
+
+// ===== Interleave Two Lists =====
+Node* interleaveLists(Node* list1, Node* list2) {
+    if (!list1) return list2;
+    if (!list2) return list1;
+
+    Node* head = list1;
+    Node* curr1 = list1;
+    Node* curr2 = list2;
+    Node* next1, *next2;
+
+    while (curr1 && curr2) {
+        next1 = curr1->next;
+        next2 = curr2->next;
+
+        curr1->next = curr2;
+        if (next1 == NULL) break;
+        curr2->next = next1;
+
+        curr1 = next1;
+        curr2 = next2;
+    }
+
+    return head;
+}
+
+// ===== Utility Functions =====
+void traverse(Node* head) {
+    if (head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+    Node* temp = head;
+    while (temp) {
+        printf("%d -> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+
+// ===== Main Driver =====
+int main() {
+    Node *list1 = NULL, *list2 = NULL, *merged = NULL, *interleaved = NULL;
+    int n1, n2;
+
+    // Recursive creation + traversal
+    printf("Enter number of nodes for list1: ");
+    scanf("%d", &n1);
+    list1 = createRecursive(n1);
+
+    printf("Enter number of nodes for list2: ");
+    scanf("%d", &n2);
+    list2 = createRecursive(n2);
+
+    printf("\nRecursive Traversal of List1: ");
+    traverseRecursive(list1);
+
+    printf("Recursive Traversal of List2: ");
+    traverseRecursive(list2);
+
+    // Merge Sorted Lists
+    printf("\nMerging two sorted lists...\n");
+    merged = mergeSorted(list1, list2);
+    printf("Merged List: ");
+    traverse(merged);
+
+    // Prepare again for interleaving (since mergeSorted consumes original lists)
+    printf("\nEnter number of nodes for list1 (for interleave): ");
+    scanf("%d", &n1);
+    list1 = createRecursive(n1);
+
+    printf("Enter number of nodes for list2 (for interleave): ");
+    scanf("%d", &n2);
+    list2 = createRecursive(n2);
+
+    printf("\nInterleaving two lists...\n");
+    interleaved = interleaveLists(list1, list2);
+    printf("Interleaved List: ");
+    traverse(interleaved);
+
+    return 0;
+}
